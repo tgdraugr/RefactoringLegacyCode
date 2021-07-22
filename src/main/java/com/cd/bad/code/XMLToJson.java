@@ -35,7 +35,7 @@ import java.util.*;
 
 public class XMLToJson {
 	private static final String EMPTY_STRING = "";
-	private static final Map<String, TocElementExtraction> EXTRACTORS;
+	private static final Map<String, ElementExtraction> EXTRACTORS;
 	private static final Map<String, String> pathMap;
 	
 	static {
@@ -52,8 +52,8 @@ public class XMLToJson {
 	
 	static {
 		EXTRACTORS = new HashMap<>();
-		EXTRACTORS.put("folder", new FolderElement());
-		EXTRACTORS.put("doc", new DocElement());
+		EXTRACTORS.put("folder", new FolderExtraction());
+		EXTRACTORS.put("doc", new DocExtraction());
 	}
 
 	Util util = new Util();

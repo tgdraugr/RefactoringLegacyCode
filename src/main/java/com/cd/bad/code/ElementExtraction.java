@@ -2,6 +2,6 @@ package com.cd.bad.code;
 
 import org.dom4j.Element;
 
-public interface TocElementExtraction {
+public interface ElementExtraction {
 	String processElement(String xPathExpression, Element element);
 }
