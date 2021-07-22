@@ -1,7 +1,9 @@
 package com.cd.bad.code;
 
 import org.dom4j.Document;
+import org.dom4j.DocumentException;
 import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 import java.net.URL;
 import java.util.*;
@@ -56,11 +58,22 @@ public class XMLToJson {
 		EXTRACTORS.put("doc", new DocExtraction());
 	}
 
-	Util util = new Util();
-
 	public String getJson(URL url, String xPathString) throws Exception {
-		Document TOCDoc = util.getDocument(url);
+		Document TOCDoc = getDocument(url);
 		return getJsonFromDocument(xPathString, TOCDoc);
+	}
+	
+	private Document getDocument(URL url) {
+		SAXReader reader = new SAXReader();
+		Document document = null;
+
+		try {
+			document = reader.read(url);
+		} catch (DocumentException e) {
+			e.printStackTrace();
+		}
+
+		return document;
 	}
 
 	private String getJsonFromDocument(String xPathString, Document TOCDoc) throws Exception {
