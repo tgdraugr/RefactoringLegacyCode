@@ -38,7 +38,7 @@ import java.util.*;
 public class XMLToJson {
 	private static final String EMPTY_STRING = "";
 	private static final Map<String, ElementExtraction> EXTRACTORS;
-	private static final Map<String, String> pathMap;
+	private static final Map<String, String> PATH_MAP;
 	
 	static {
 		Map<String, String> aMap = new HashMap<String, String>();
@@ -49,7 +49,7 @@ public class XMLToJson {
 		aMap.put("dt", "doc[@type");
 		aMap.put("dth", "doc[@type='history'");
 		aMap.put("dtrn", "doc[@trnum");
-		pathMap = Collections.unmodifiableMap(aMap);
+		PATH_MAP = Collections.unmodifiableMap(aMap);
 	}
 	
 	static {
@@ -63,17 +63,9 @@ public class XMLToJson {
 		return getJsonFromDocument(xPathString, TOCDoc);
 	}
 	
-	private Document getDocument(URL url) {
+	private Document getDocument(URL url) throws DocumentException {
 		SAXReader reader = new SAXReader();
-		Document document = null;
-
-		try {
-			document = reader.read(url);
-		} catch (DocumentException e) {
-			e.printStackTrace();
-		}
-
-		return document;
+		return reader.read(url);	
 	}
 
 	private String getJsonFromDocument(String xPathString, Document TOCDoc) throws Exception {
@@ -168,8 +160,8 @@ public class XMLToJson {
 				keyValueSepPos = segString.indexOf(":");
 				keyString = segString.substring(0, keyValueSepPos);
 				valueString = segString.substring(keyValueSepPos + 1);
-				if (pathMap.get(keyString).length() > 0) {
-					tagetString = tagetString.concat(pathMap.get(keyString));
+				if (PATH_MAP.get(keyString).length() > 0) {
+					tagetString = tagetString.concat(PATH_MAP.get(keyString));
 				} else {
 					throw new Exception("no mapping found");
 				}
@@ -183,8 +175,8 @@ public class XMLToJson {
 			int lastKeyValueSepPos = segString.indexOf(":");
 			String lastKeyString = segString.substring(0, lastKeyValueSepPos);
 			String lastValueString = segString.substring(lastKeyValueSepPos + 1);
-			if (pathMap.get(lastKeyString).length() > 0) {
-				tagetString = tagetString.concat(pathMap.get(lastKeyString));
+			if (PATH_MAP.get(lastKeyString).length() > 0) {
+				tagetString = tagetString.concat(PATH_MAP.get(lastKeyString));
 			} else {
 				throw new Exception("no mapping found");
 			}
