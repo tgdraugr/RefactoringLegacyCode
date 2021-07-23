@@ -39,6 +39,9 @@ public class DocExtraction implements ElementExtraction {
 				break;
 			}
 		}
+		
+		jsonString = withTrailingCommaRemoved(jsonString);
+		
 		return jsonString;
 	}
 
@@ -55,6 +58,13 @@ public class DocExtraction implements ElementExtraction {
 		String keyContent = element.attributeValue("key");
 		jsonString = jsonString.concat("'attr':{'id':'").concat(xPathExpression).concat("_dk:")
 				.concat(keyContent).concat("','file':'").concat(fileAttrContent).concat("'}");
+		return jsonString;
+	}
+	
+	private String withTrailingCommaRemoved(String jsonString) {
+		if (jsonString.endsWith(",")) {
+			jsonString = jsonString.substring(0, jsonString.length() - 1);
+		}
 		return jsonString;
 	}
 	

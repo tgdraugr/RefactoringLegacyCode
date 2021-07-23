@@ -63,12 +63,7 @@ public class XMLToJson {
 		return getJsonFromDocument(xPathString, TOCDoc);
 	}
 	
-	private Document getDocument(URL url) throws DocumentException {
-		SAXReader reader = new SAXReader();
-		return reader.read(url);	
-	}
-
-	private String getJsonFromDocument(String xPathString, Document TOCDoc) throws Exception {
+	public String getJsonFromDocument(String xPathString, Document TOCDoc) throws Exception {
 		String jsonString = "[";
 
 		Element node = getNode(xPathString, TOCDoc);
@@ -76,12 +71,19 @@ public class XMLToJson {
 		for (Iterator<Element> i = node.elementIterator(); i.hasNext();) {
 			jsonString = jsonString.concat(getProcessedElement(xPathString, i.next()));
 		}
-
+		
 		return getClosedJson(jsonString);
+	}
+	
+	private Document getDocument(URL url) throws DocumentException {
+		SAXReader reader = new SAXReader();
+		return reader.read(url);	
 	}
 
 	private String getClosedJson(String jsonString) {
-		jsonString = jsonString.substring(0, jsonString.length() - 1);
+		if (jsonString.length() > 1) {
+			jsonString = jsonString.substring(0, jsonString.length() - 1);			
+		}
 		jsonString = jsonString.concat("]");
 		return jsonString;
 	}
@@ -91,7 +93,7 @@ public class XMLToJson {
 		if (EXTRACTORS.containsKey(elementName)) {
 			return EXTRACTORS.get(elementName).processElement(xPathExpression, element);
 		}
-		return EMPTY_STRING;
+		return EMPTY_STRING;	
 	}
 	
 	private Element getNode(String xPathString, Document TOCDoc) throws Exception {
