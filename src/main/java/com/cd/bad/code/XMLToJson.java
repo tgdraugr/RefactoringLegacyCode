@@ -37,7 +37,7 @@ import java.util.*;
 
 public class XMLToJson {
 	private static final String EMPTY_STRING = "";
-	private static final Map<String, ElementExtraction> EXTRACTORS;
+	private static final Map<String, TocElement> ELEMENTS;
 	private static final Map<String, String> PATH_MAP;
 	
 	static {
@@ -53,9 +53,9 @@ public class XMLToJson {
 	}
 	
 	static {
-		EXTRACTORS = new HashMap<>();
-		EXTRACTORS.put("folder", new FolderExtraction());
-		EXTRACTORS.put("doc", new DocExtraction());
+		ELEMENTS = new HashMap<>();
+		ELEMENTS.put("folder", new FolderElement());
+		ELEMENTS.put("doc", new DocElement());
 	}
 
 	public String getJson(URL url, String xPathString) throws Exception {
@@ -90,8 +90,8 @@ public class XMLToJson {
 	
 	private String getProcessedElement(String xPathExpression, Element element) {
 		String elementName = element.getName();
-		if (EXTRACTORS.containsKey(elementName)) {
-			return EXTRACTORS.get(elementName).processElement(xPathExpression, element);
+		if (ELEMENTS.containsKey(elementName)) {
+			return ELEMENTS.get(elementName).processedElement(xPathExpression, element);
 		}
 		return EMPTY_STRING;	
 	}

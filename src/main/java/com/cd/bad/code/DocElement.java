@@ -5,10 +5,10 @@ import java.util.List;
 import org.dom4j.Attribute;
 import org.dom4j.Element;
 
-public class DocExtraction implements ElementExtraction {
+public class DocElement implements TocElement {
 
 	@Override
-	public String processElement(String xPathExpression, Element element) {
+	public String processedElement(String xPathExpression, Element element) {
 		List<Attribute> attributes = element.attributes();
 		String titleAttrContent = element.attributeValue("title");
 		String fileAttrContent = element.attributeValue("file");
