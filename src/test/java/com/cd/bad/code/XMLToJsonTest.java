@@ -6,6 +6,8 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.junit.Test;
 
+import com.cd.bad.code.XMLToJson.XPathPatterns;
+
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -25,18 +27,31 @@ public class XMLToJsonTest {
 	@Test
 	public void shouldParseEmptyFolder() throws Exception {
 		final XMLToJson translate = new XMLToJson();
-		final Document doc = createDoc("<folder></folder>");
+		final Document doc = docFor("<folder></folder>");
 		assertEquals("[]", translate.getJsonFromDocument("/", doc));
+	}
+	
+	@Test
+	public void shouldParseEmptyDoc() throws Exception {
+		final XMLToJson translate = new XMLToJson();
+		final Document doc = docFor("<folder><doc/></folder>");
+		assertEquals("[{}]", translate.getJsonFromDocument("/", doc));
 	}
 	
 	@Test
 	public void shouldParseSimpleDoc() throws Exception {
 		final XMLToJson translate = new XMLToJson();
-		final Document doc = createDoc("<folder><doc title=\"test_title\"/></folder>");
+		final Document doc = docFor("<folder><doc title=\"test_title\"/></folder>");
 		assertEquals("[{'data':'test_title'}]", translate.getJsonFromDocument("/", doc));
 	}
+	
+	@Test
+	public void shouldMapTocPatternsIntoXPathPatterns() throws Exception {
+		assertEquals("//folder[@key='AMM24']/folder[@key='AMM24-00-00']/folder[@key='AMM24-00-00-02']", 
+				XPathPatterns.xPathFrom("fk:AMM24_fk:AMM24-00-00_fk:AMM24-00-00-02"));
+	}
 
-	private Document createDoc(String xml) throws DocumentException {
+	private Document docFor(String xml) throws DocumentException {
 		var reader = new SAXReader();
 		return reader.read(new ByteArrayInputStream(xml.getBytes()));
 	}

@@ -6,19 +6,27 @@ import org.dom4j.Attribute;
 import org.dom4j.Element;
 
 public class DocElement implements TocElement {
-
+	
+	private static final String EMPTY_DOC = "{}";
+	
 	@Override
 	public String processedElement(String xPathExpression, Element element) {
 		List<Attribute> attributes = element.attributes();
+		
+		if (attributes.isEmpty()) {
+			return EMPTY_DOC.concat(",");
+		}
+		
 		String titleAttrContent = element.attributeValue("title");
 		String fileAttrContent = element.attributeValue("file");
-		
 		String jsonString = "";
-		jsonString = processDocAttributes(xPathExpression, element, jsonString, attributes, titleAttrContent, fileAttrContent);
+		
+		jsonString = processDocAttributes(xPathExpression, element, jsonString, attributes, titleAttrContent, fileAttrContent);	
 		
 		if (hasChildren(element)) {
 			jsonString = jsonString.concat(",'state':'closed'");
 		}
+		
 		jsonString = jsonString.concat("},");
 		
 		return jsonString;
