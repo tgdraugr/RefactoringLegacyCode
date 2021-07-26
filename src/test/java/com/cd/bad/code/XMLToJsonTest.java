@@ -6,8 +6,6 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.SAXReader;
 import org.junit.Test;
 
-import com.cd.bad.code.XMLToJson.XPathPatterns;
-
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -47,8 +45,9 @@ public class XMLToJsonTest {
 	
 	@Test
 	public void shouldMapTocPatternsIntoXPathPatterns() throws Exception {
+		XPathProvider provider = new TocQueryExpressions();
 		assertEquals("//folder[@key='AMM24']/folder[@key='AMM24-00-00']/folder[@key='AMM24-00-00-02']", 
-				XPathPatterns.xPathFrom("fk:AMM24_fk:AMM24-00-00_fk:AMM24-00-00-02"));
+				provider.xPathFrom("fk:AMM24_fk:AMM24-00-00_fk:AMM24-00-00-02"));
 	}
 
 	private Document docFor(String xml) throws DocumentException {

@@ -45,7 +45,17 @@ public class XMLToJson {
 		ELEMENTS.put("folder", new FolderElement());
 		ELEMENTS.put("doc", new DocElement());
 	}
+	
+	private XPathProvider xPathProvider;
+	
+	public XMLToJson() {
+		this(new TocQueryExpressions());
+	}
 
+	public XMLToJson(XPathProvider xPathProvider) {
+		this.xPathProvider = xPathProvider;
+	}
+	
 	public String getJson(URL url, String xPathString) throws Exception {
 		Document TOCDoc = getDocument(url);
 		return getJsonFromDocument(xPathString, TOCDoc);
@@ -88,108 +98,8 @@ public class XMLToJson {
 		if (xPathString.equals("/")) {
 			return TOCDoc.getRootElement();
 		} else {
-			String realXPathString = XPathPatterns.xPathFrom(xPathString);
+			String realXPathString = this.xPathProvider.xPathFrom(xPathString);
 			return (Element) TOCDoc.selectSingleNode(realXPathString);
-		}
-	}
-	
-	public static class XPathPatterns {
-		private static final String FOLDER_KEY = "fk";
-		private static final String FOLDER_TYPE = "ft";
-		private static final String FOLDER_TYPE_AS_HISTORY = "fth";
-		private static final String DOC_KEY = "dk";
-		private static final String DOC_TYPE = "dt";
-		private static final String DOC_TYPE_AS_HISTORY = "dth";
-		private static final String DOC_TRNUM = "dtrn";
-		private static final Map<String, String> XPATHEXPRESSIONS_BY_INTERNALEXPRESSION;
-		
-		static {
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION = new HashMap<String, String>();
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(FOLDER_KEY, "folder[@key");
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(FOLDER_TYPE, "folder[@type");
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(FOLDER_TYPE_AS_HISTORY, "folder[@type='history'");
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(DOC_KEY, "doc[@key");
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(DOC_TYPE, "doc[@type");
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(DOC_TYPE_AS_HISTORY, "doc[@type='history'");
-			XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.put(DOC_TRNUM, "doc[@trnum");
-		}
-
-		/**
-		 * post string looks like :
-		 * 
-		 * "fk:LOETR_dtrn:TR12-118_fth_dth" it represents the inner doc element:
-		 * <folder key="LOETR" type="loetr"
-		 * title="List of Effective TRs" file="loetr.html"> <doc type="tr"
-		 * trnum="TR12-118" trdate="May 07/2012"
-		 * title="[TR12-118] TASK AMM12-31-00-660-806 - Inspection and Removal of De-Hydrated Anti-Icing Fluid inside the Flight Control Surfaces"
-		 * file="TR12-118.pdf" refloc="AMM12-31-00-660-806"> <folder type="history"
-		 * title="History of AMM12-31-00-660-806"> <doc
-		 * title="TASK 12-31-00-660-806 - Inspection and Removal of De-Hydrated Anti-Icing Fluid inside the Flight Control Surfaces"
-		 * file="AMM12-31-00-660-806.pdf" type="history" refloc="AMM12-31-00-660-806"/>
-		 * </folder> 
-		 * 
-		 * the xpath string should be:
-		 * 
-		 * folder[@key="LOETR"]/doc[@trnum="TR12-118"]/folder[@type="history"]/doc[@type
-		 * ="history"]
-		 *
-		 *
-		 * the String : "fk:AMM24_fk:AMM24-FM_dk:CTOC-24" it represents the inner doc with attribute file="CTOC-24.pdf" 
-		 * 
-		 * the string : "fk:AMM24_fk:AMM24-00-00_fk:AMM24-00-00-02_dk:AMM24-00-00-700-801" represents
-		 * <folder key="AMM24" title="CH 24 - Electrical Power"> <folder key="AMM24-FM"
-		 * title="Front Matter"> <doc key="CTOC-24" title="Table of Contents"
-		 * file="CTOC-24.pdf"/> </folder> <folder key="AMM24-00-00"
-		 * title="24-00-00 - General"> <folder key="AMM24-00-00-02"
-		 * title="General - Maintenance Practices"> <doc key="AMM24-00-00-700-801"
-		 * title="TASK 24-00-00-700-801 - AC Power, DC Power and Battery Maintenance Practice Recommendations"
-		 * file="AMM24-00-00-700-801.pdf"/>
-		 *
-		 * it can be even optimised as: "fk:AMM24_fk:00-00_fk:02_dk:AMM24-00-00-700-801"
-		 * 
-		 * if the inner key fully includes the previous key, omit it. Otherwise use full string the xpath string should be:
-		 * folder[@key="AMM24"]/folder[@key="AMM24-00-00"]/folder[@key="AMM24-00-00-02"]/doc[@key="AMM24-00-00-700-801"]
-		 *
-		 * if shortXPath is ?? which means the query based on the root of the document
-		 */
-		public static String xPathFrom(String shortXPath) throws Exception {
-			String targetString = null;
-			if (shortXPath.equals("")) {
-				targetString = "//toc";
-			} else {
-				targetString = "//";
-			}
-
-			int start = 0;
-			int underscorePosition = shortXPath.indexOf("_", start);
-			
-			while (underscorePosition > -1) {
-				String substring = shortXPath.substring(start, underscorePosition);
-				start = underscorePosition + 1;
-				targetString = withUnfinishedFilledValue(targetString, substring);
-				underscorePosition = shortXPath.indexOf("_", start);
-			}
-			
-			return withFinishedFilledValue(targetString, shortXPath.substring(start));
-		}
-		
-		private static String withFinishedFilledValue(String target, String substring) {
-			return withFilledValue(target, substring, "']");
-		}
-		
-		private static String withUnfinishedFilledValue(String target, String substring) {
-			return withFilledValue(target, substring, "']/");
-		}
-
-		private static String withFilledValue(String target, String substring, String closure) {
-			if (substring.indexOf(":") > 0) {
-				int keyValueSepPos = substring.indexOf(":");
-				String keyString = substring.substring(0, keyValueSepPos);
-				String valueString = substring.substring(keyValueSepPos + 1);
-				target = target.concat(XPATHEXPRESSIONS_BY_INTERNALEXPRESSION.get(keyString));
-				target = target.concat("='").concat(valueString).concat(closure);
-			}
-			return target;
 		}
 	}
 }
